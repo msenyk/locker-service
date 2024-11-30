@@ -30,10 +30,30 @@ class CellDTO(BaseModel):
     status: str
     pin: Union[str, None] = None
 
+def initRedis():
+    redisUrl = os.environ.get("REDIS_TLS_URL")
+    if redisUrl:
+        url = urlparse(redisUrl)
+        return redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
+    else:
+        return redis.Redis()    
+
+r = initRedis()
+r.hmset("locker:1234", {'lockerId': 1234, 'cells': "C-001,C-002"})
+#r.hmset("locker:1235", {'lockerId': 1235, 'cells': "C-003,C-004,C-005"})
+
 app = FastAPI()
-url = urlparse(os.environ.get("REDIS_TLS_URL"))
-r = redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
-#r = redis.from_url(os.getenv('REDIS_TLS_URL'))
+
+
+"""
+r = ''
+redisUrl = os.environ.get("REDIS_TLS_URL")
+if redisUrl:
+    url = urlparse(redisUrl)
+    r = redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
+else:
+    r = redis.Redis()
+"""
 
 class ParcelLocker():
     _lockerId: int
@@ -58,7 +78,9 @@ class ParcelLocker():
             raise HTTPException(status_code=404, detail=f"Cell by ID: {cellId} not found (locker ID: {self._lockerId})")
         if not r.hget(hkey, "status"):
             # init new cell
-            r.hmset(hkey, {"status", CLOSED_CELL, "pin", "------"})
+            r.hset(hkey, "status", CLOSED_CELL)
+            r.hset(hkey, "pin", "------")
+            #r.hmset(hkey, {"status", CLOSED_CELL, "pin", "------"})
         cellStatus = r.hget(hkey, "status").decode()
         cellPin = r.hget(hkey, "pin").decode()
         return (cellStatus, cellPin)
@@ -111,14 +133,6 @@ class ParcelLocker():
         r.hset(hkey, "status", OPEN_CELL)
         return cellId
 
-
-
-
-def initRedis():
-    r.hmset("locker:1234", {'lockerId': 1234, 'cells': "C-001,C-002"})
-    #r.hmset("locker:1235", {'lockerId': 1235, 'cells': "C-003,C-004,C-005"})
-
-initRedis()
 
 #TODO add authentication layer
 
