@@ -30,8 +30,8 @@ class CellDTO(BaseModel):
     pin: Union[str, None] = None
 
 app = FastAPI()
-redis_url = f"{os.getenv('REDIS_URL')}?ssl_cert_reqs=None"
-r = redis.from_url(redis_url)
+#redis_url = f"{os.getenv('REDIS_TLS_URL')}?ssl_cert_reqs=None"
+r = redis.from_url(os.getenv('REDIS_TLS_URL'))
 
 class ParcelLocker():
     _lockerId: int
