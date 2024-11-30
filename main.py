@@ -56,11 +56,10 @@ class ParcelLocker():
         hkey = f"cell:{self._lockerId}_{cellId}"
         if cellId not in self._cells:
             raise HTTPException(status_code=404, detail=f"Cell by ID: {cellId} not found (locker ID: {self._lockerId})")
-        cellStatus = r.hget(hkey, "status").decode()
-        if not cellStatus:
+        if not r.hget(hkey, "status"):
             # init new cell
-            cellStatus = CLOSED_CELL
-            r.hmset(hkey, {"status", cellStatus, "pin", "------"})
+            r.hmset(hkey, {"status", CLOSED_CELL, "pin", "------"})
+        cellStatus = r.hget(hkey, "status").decode()
         cellPin = r.hget(hkey, "pin").decode()
         return (cellStatus, cellPin)
 
