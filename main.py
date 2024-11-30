@@ -53,8 +53,6 @@ class ParcelLocker():
         print("Checking locker:", lockerId)
         hkey = f"locker:{lockerId}"
         rLockerId = r.hget(hkey, 'lockerId')
-        print("Locker ID:", rLockerId)
-        print("Locker ID (decoded):", rLockerId.decode())
         if (not rLockerId) or (rLockerId.decode() != str(lockerId)):
             raise HTTPException(status_code=404, detail=f"Locker by ID: {lockerId} not found")
         self._lockerId = lockerId
@@ -105,9 +103,11 @@ class ParcelLocker():
         for anotherCellId in self._cells:
             if anotherCellId != skipCellId:
                 hkey = f"cell:{self._lockerId}_{anotherCellId}"
-                pin = r.hget(hkey, "pin").decode()
-                allPins.add(pin)
-                self._pinToCellId[pin] = anotherCellId
+                pin = r.hget(hkey, "pin")
+                if pin:
+                    pin = pin.decode()
+                    allPins.add(pin)
+                    self._pinToCellId[pin] = anotherCellId
         return allPins
 
     def enterPin(self, lockerId, pin) -> str:
