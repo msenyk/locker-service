@@ -3,6 +3,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import re
 import redis
+from urllib.parse import urlparse
 import os
 
 """
@@ -30,8 +31,9 @@ class CellDTO(BaseModel):
     pin: Union[str, None] = None
 
 app = FastAPI()
-#redis_url = f"{os.getenv('REDIS_TLS_URL')}?ssl_cert_reqs=None"
-r = redis.from_url(os.getenv('REDIS_TLS_URL'))
+url = urlparse(os.environ.get("REDIS_TLS_URL"))
+r = redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
+#r = redis.from_url(os.getenv('REDIS_TLS_URL'))
 
 class ParcelLocker():
     _lockerId: int
