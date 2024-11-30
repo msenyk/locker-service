@@ -44,17 +44,6 @@ r.hmset("locker:1234", {'lockerId': 1234, 'cells': "C-001,C-002"})
 
 app = FastAPI()
 
-
-"""
-r = ''
-redisUrl = os.environ.get("REDIS_TLS_URL")
-if redisUrl:
-    url = urlparse(redisUrl)
-    r = redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
-else:
-    r = redis.Redis()
-"""
-
 class ParcelLocker():
     _lockerId: int
     _cells: set()
