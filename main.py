@@ -31,7 +31,7 @@ class CellDTO(BaseModel):
     pin: Union[str, None] = None
 
 def initRedis():
-    redisUrl = os.environ.get("REDIS_TLS_URL")
+    redisUrl = os.environ.get("REDIS_URL")
     if redisUrl:
         url = urlparse(redisUrl)
         return redis.Redis(host=url.hostname, port=url.port, password=url.password, ssl=(url.scheme == "rediss"), ssl_cert_reqs=None)
